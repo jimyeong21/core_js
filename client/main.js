@@ -1,3 +1,4 @@
-const a = 'hello';
-
-console.log(navigator.language);
+/* 사용자와의 상호작용을 위한 세가지 기능 */
+// alert('경고창!');
+// confirm('지울거야?');
+// prompt('당신은 잘생겼습니까?');
