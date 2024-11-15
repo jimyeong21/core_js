@@ -20,3 +20,17 @@ function setAttr(node, prop, value) {
 
   node.setAttribute(prop, value);
 }
+
+// function attr(node,prop,value){
+
+//   if(!value){
+//     return getAttr(node,prop)
+//   }else{
+//     setAttr(node,prop,value)
+//   }
+// }
+
+const attr = (node, prop, value) => (!value ? getAttr(node, prop) : setAttr(node, prop, value));
+
+// attr('.about','id') // getter
+// attr('.about','id','star') // setter
