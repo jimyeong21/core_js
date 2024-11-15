@@ -1,5 +1,36 @@
 /* global syntaxError */
 
+function addClass(node, ...className) {
+  if (isString(node)) node = getNode(node);
+
+  className.forEach((c) => {
+    if (isObject(c)) c = Object.values(c);
+
+    if (c.includes(',')) {
+      c = c.replace(/\s*/g, '').split(',');
+    }
+
+    if (isArray(c)) {
+      c.forEach((c) => node.classList.add(c));
+    } else {
+      node.classList.add(c);
+    }
+  });
+}
+
+function removeClass(node, className) {
+  if (isString(node)) node = getNode(node);
+  if (!className) {
+    node.className = '';
+  }
+  node.classList.remove(className);
+}
+
+function toggleClass(node, className) {
+  if (isString(node)) node = getNode(node);
+  return node.classList.toggle(className);
+}
+
 function getCss(node, prop) {
   if (isString(node)) node = getNode(node);
   if (!(prop in document.body.style)) throw syntaxError('getCss 함수의 두 번째 인수는 유효한 css 속성 이어야 합니다.');
