@@ -35,7 +35,9 @@ console.log(about.hasAttribute('class'));
 console.log(getAttr('.about', 'class'));
 
 // 3. id의 값을 어바웃으로 설정해주세요
-about.setAttribute('id', '어바웃');
+// about.setAttribute('id', '어바웃');
+
+setAttr('.about', 'id', 'about');
 
 // 4. data-name의 속성을 제거해주세요
 about.removeAttribute('data-name');
