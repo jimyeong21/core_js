@@ -1,19 +1,32 @@
 const END_POINT = 'https://jsonplaceholder.typicode.com/users';
 
 // [readyState]
-// 통신의 상태를 자세하게 나타내준다.
-// 0 : uninitialized -> 초기화가 되지 않은 상태, 요청보내지 않음
+// 0 : uninitialized
 // 1 : loading
 // 2 : loaded
 // 3 : interactive
-// 4 : complete
+// 4 : complete  => 성공 | 실패
 
-function xhr({ method = 'GET', url = '', success = null, fail = null, body = null, headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } } = {}) {
+/* -------------------------------------------- */
+/*                   callback                   */
+/* -------------------------------------------- */
+
+function xhr({
+  method = 'GET',
+  url = '',
+  success = null,
+  fail = null,
+  body = null,
+  headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  },
+} = {}) {
   const xhr = new XMLHttpRequest();
 
   xhr.open(method, url);
 
-  if (!method === 'DELETE') {
+  if (!(method === 'DELETE')) {
     Object.entries(headers).forEach(([k, v]) => {
       xhr.setRequestHeader(k, v);
     });
@@ -21,6 +34,7 @@ function xhr({ method = 'GET', url = '', success = null, fail = null, body = nul
 
   xhr.addEventListener('readystatechange', () => {
     const { status, response, readyState } = xhr;
+
     if (readyState === 4) {
       if (status >= 200 && status < 400) {
         const data = JSON.parse(response);
@@ -30,7 +44,6 @@ function xhr({ method = 'GET', url = '', success = null, fail = null, body = nul
       }
     }
   });
-
   xhr.send(JSON.stringify(body));
 }
 
@@ -40,17 +53,16 @@ const obj = {
 };
 
 // xhr({
+//   method:"DELETE",
 //   url: END_POINT,
-//   success: () => {},
-//   fail: () => {},
-// });
+//   success: (data)=>{
+//     console.log( data );
+//   },
+//   fail: ()=>{},
+// })
 
 xhr.get = (url, success, fail) => {
-  xhr({
-    url,
-    success,
-    fail,
-  });
+  xhr({ url, success, fail });
 };
 
 xhr.post = (url, body, success, fail) => {
@@ -62,3 +74,122 @@ xhr.post = (url, body, success, fail) => {
     fail,
   });
 };
+
+xhr.put = (url, body, success, fail) => {
+  xhr({
+    method: 'PUT',
+    url,
+    body,
+    success,
+    fail,
+  });
+};
+
+xhr.delete = (url, success, fail) => {
+  xhr({
+    method: 'DELETE',
+    url,
+    success,
+    fail,
+  });
+};
+
+// xhr.delete(
+//   END_POINT,
+//   (data)=>{
+//     console.log( data );
+//   },
+//   ()=>{
+
+//   }
+// )
+
+/* -------------------------------------------- */
+/*                    promise                   */
+/* -------------------------------------------- */
+
+// mixin
+
+const defaultOptions = {
+  method: 'GET',
+  url: '',
+  body: null,
+  errorMessage: '서버와의 통신이 원활하지 않습니다.',
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  },
+};
+
+function xhrPromise(options = {}) {
+  const { method, url, errorMessage, body, headers } = {
+    ...defaultOptions,
+    ...options,
+    headers: {
+      ...defaultOptions.headers,
+      ...options.headers,
+    },
+  };
+
+  const xhr = new XMLHttpRequest();
+
+  xhr.open(method, url);
+
+  if (!(method === 'DELETE')) {
+    Object.entries(headers).forEach(([k, v]) => {
+      xhr.setRequestHeader(k, v);
+    });
+  }
+
+  xhr.send(body ? JSON.stringify(body) : null);
+
+  return new Promise((resolve, reject) => {
+    xhr.addEventListener('readystatechange', () => {
+      if (xhr.readyState === 4) {
+        // complete
+        if (xhr.status >= 200 && xhr.status < 400) {
+          resolve(JSON.parse(xhr.response));
+        } else {
+          reject({ message: '데이터 통신이 원활하지 않습니다.' });
+        }
+      }
+    });
+  });
+}
+
+// xhrPromise({
+//   method:'GET',
+//   url:END_POINT
+// })
+// .then((res)=>{
+//   console.log( res );
+
+// })
+// .catch((err)=>{
+//   console.log( err );
+
+// })
+
+xhrPromise.get = (url) => xhrPromise({ url });
+xhrPromise.post = (url, body) => xhrPromise({ url, body, method: 'POST' });
+xhrPromise.put = (url, body) => xhrPromise({ url, body, method: 'PUT' });
+xhrPromise.delete = (url) => xhrPromise({ url, method: 'DELETE' });
+
+xhrPromise
+  .get(END_POINT)
+  .then((res) => {
+    console.log(res);
+
+    res.forEach(({ website }) => {
+      const tag = `
+      <div>site : ${website}</div>
+    `;
+
+      document.body.insertAdjacentHTML('beforeend', tag);
+    });
+  })
+  .then(() => {})
+  .catch(() => {});
+
+// xhrPromise.put()
+// xhrPromise.delete()
