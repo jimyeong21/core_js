@@ -121,7 +121,7 @@ const defaultOptions = {
   },
 };
 
-function xhrPromise(options = {}) {
+export function xhrPromise(options = {}) {
   const { method, url, errorMessage, body, headers } = {
     ...defaultOptions,
     ...options,
@@ -178,7 +178,7 @@ xhrPromise.delete = (url) => xhrPromise({ url, method: 'DELETE' });
 xhrPromise
   .get(END_POINT)
   .then((res) => {
-    console.log(res);
+    // console.log(res);
 
     res.forEach(({ website }) => {
       const tag = `
