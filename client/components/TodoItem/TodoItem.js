@@ -55,6 +55,7 @@ export class TodoItem extends HTMLElement {
     } else {
       this.contentInput.classList.remove('done');
     }
+    s.CheckTodoItem(this.id, this.checkbox);
   }
   render() {
     this.shadowRoot.append(todoItemTemplate.content.cloneNode(true));
