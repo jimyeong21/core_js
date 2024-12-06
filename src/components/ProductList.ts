@@ -1,8 +1,9 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import resetCSS from "../Layout/resetCSS";
-import { Product } from "../@types/type";
+import { Auth, Product } from "../@types/type";
 import { getPbImageURL } from "../api/getPbImageURL";
+import gsap from "gsap";
 
 @customElement("product-list")
 class ProductList extends LitElement {
@@ -13,6 +14,9 @@ class ProductList extends LitElement {
     totalItems: 0,
     totalPages: 0,
   };
+
+  @state() loginData = {} as Auth;
+
   static styles: CSSResultGroup = [
     resetCSS,
     css`
@@ -61,10 +65,21 @@ class ProductList extends LitElement {
           }
         }
       }
+
+      .new-post {
+        padding: 0.5rem 1rem;
+        background-color: dodgerblue;
+        color: white;
+        border-radius: 20px;
+        position: fixed;
+        transform: translateX(-50%);
+        left: 50%;
+        bottom: 2rem;
+      }
     `,
   ];
 
-  connectedCallback(): void {
+  connectedCallback() {
     super.connectedCallback();
     this.fetchData();
   }
@@ -74,25 +89,44 @@ class ProductList extends LitElement {
 
     const data = await response.json();
     this.data = data;
+
+    this.loginData = JSON.parse(localStorage.getItem("auth") ?? "{}");
+  }
+
+  updated(changedProperties: Map<string | number | symbol, unknown>): void {
+    super.updated(changedProperties);
+
+    const item = this.renderRoot.querySelectorAll(".product-item");
+
+    if (item.length > 0) {
+      gsap.from(item, {
+        y: 30,
+        opacity: 0,
+        stagger: 0.2,
+      });
+    }
   }
 
   render() {
+    const { isAuth } = this.loginData;
+
+    // <a href="${isAuth ? `/src/pages/detail/` : `/`}">
     return html`
       <div class="container">
         <ul>
           ${this.data.items.map(
             (item) => html`
-              <li>
-                <a href="/">
+              <li class="product-item">
+                <a href="/src/pages/detail/index.html?product=${item.id}">
                   <figure>
                     <img src="${getPbImageURL(item)}" alt="" />
                   </figure>
                   <span class="brand">${item.brand}</span>
                   <span class="description">${item.description}</span>
-                  <span class="price">${item.price.toLocaleString()}</span>
+                  <span class="price">${item.price.toLocaleString()}원</span>
                   <div>
-                    <span class="discount">${item.discount}</span>
-                    <span class="rear-price">${(item.price - item.price * item.discount * 0.01).toLocaleString()}원</span>
+                    <span class="discount">${item.discount}%</span>
+                    <span class="real-price">${(item.price - item.price * item.discount * 0.01).toLocaleString()}원</span>
                   </div>
                 </a>
               </li>
@@ -100,6 +134,7 @@ class ProductList extends LitElement {
           )}
         </ul>
       </div>
+      <a class="new-post" href="/src/pages/newPost/">+ 상품추가</a>
     `;
   }
 }
